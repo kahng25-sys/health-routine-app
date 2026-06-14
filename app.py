@@ -1,5 +1,4 @@
 import streamlit as st
-import streamlit.components.v1 as components
 from datetime import date, datetime
 import gspread
 from google.oauth2.service_account import Credentials
@@ -323,36 +322,21 @@ with tab1:
     done_count = sum([st.session_state.meal_m_done, st.session_state.meal_l_done, st.session_state.meal_d_done])
     st.progress(done_count / 3, text=f"{done_count} / 3 완료")
 
-    # ── 수분 (SVG 물방울 버튼) ──
+    # ── 수분 (st.button 방식) ──
     st.markdown("<div class='card-title' style='margin-top:16px;'>💧 수분 섭취 (목표 8컵)</div>", unsafe_allow_html=True)
 
     MAX_WATER = 12
     current_water = st.session_state.water
 
-    # SVG 물방울 버튼 (components.html → iframe 내 onclick이 안정적으로 동작)
-    water_html = "<div style='display:flex; gap:5px; flex-wrap:nowrap; align-items:center;'>"
+    water_cols = st.columns(MAX_WATER)
     for i in range(MAX_WATER):
         filled = i < current_water
-        fill_color   = "#1D9E75" if filled else "white"
-        stroke_color = "#1D9E75" if filled else "#AAAAAA"
         new_val = i if filled else i + 1
-        water_html += f"""
-        <div onclick="go({new_val})"
-             style="cursor:pointer; width:30px; height:36px; display:flex; align-items:center; justify-content:center;">
-          <svg width="22" height="28" viewBox="0 0 22 28" xmlns="http://www.w3.org/2000/svg">
-            <path d="M11 1 C11 1 1 12 1 18.5 C1 23.75 5.48 27 11 27 C16.52 27 21 23.75 21 18.5 C21 12 11 1 11 1 Z"
-                  fill="{fill_color}" stroke="{stroke_color}" stroke-width="1.8"/>
-          </svg>
-        </div>"""
-    water_html += """</div>
-<script>
-function go(val) {
-    var url = new URL(window.parent.location.href);
-    url.searchParams.set('water', val);
-    window.parent.location.href = url.toString();
-}
-</script>"""
-    components.html(water_html, height=50)
+        with water_cols[i]:
+            if st.button("💧" if filled else "○", key=f"water_{i}"):
+                st.session_state.water = new_val
+                save_meal()
+                st.rerun()
 
     water = st.session_state.water
     goal_text = "✅ 목표 달성!" if water >= 8 else f"({8 - water}컵 남음)"
