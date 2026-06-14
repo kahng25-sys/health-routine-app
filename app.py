@@ -1,5 +1,13 @@
 import streamlit as st
 from datetime import date, datetime
+import pytz
+
+# 뉴저지 시간대 설정
+KST = pytz.timezone("America/New_York")
+
+def now_local():
+    """현지 시간 반환"""
+    return datetime.now(KST).strftime("%H:%M")
 import gspread
 from google.oauth2.service_account import Credentials
 import json
@@ -119,7 +127,7 @@ def save_meal():
             TODAY_MEAL["l"], st.session_state.meal_l_actual, "✓" if st.session_state.meal_l_done else "",
             TODAY_MEAL["d"], st.session_state.meal_d_actual, "✓" if st.session_state.meal_d_done else "",
             st.session_state.water,
-            datetime.now().strftime("%H:%M")
+            now_local()
         ]
         # 오늘 행 찾아서 업데이트 or 추가
         for i, row in enumerate(rows):
@@ -136,7 +144,7 @@ def save_diary():
         headers = ["날짜","기분","일기내용","저장시간"]
         ws   = get_worksheet("일기", headers)
         rows = ws.get_all_values()
-        row_data = [TODAY_STR, st.session_state.diary_mood, st.session_state.diary_content, datetime.now().strftime("%H:%M")]
+        row_data = [TODAY_STR, st.session_state.diary_mood, st.session_state.diary_content, now_local()]
         for i, row in enumerate(rows):
             if row and str(row[0]) == TODAY_STR:
                 ws.update(f"A{i+1}", [row_data])
@@ -150,7 +158,7 @@ def save_idea(text, tag):
     try:
         headers = ["날짜","시간","태그","내용"]
         ws = get_worksheet("메모아이디어", headers)
-        ws.append_row([TODAY_STR, datetime.now().strftime("%H:%M"), tag, text])
+        ws.append_row([TODAY_STR, now_local(), tag, text])
     except Exception as e:
         st.error(f"저장 실패: {e}")
 
@@ -374,7 +382,7 @@ with tab4:
     with col_btn:
         if st.button("저장", use_container_width=True, type="primary") and idea_text.strip():
             save_idea(idea_text, idea_tag)
-            st.session_state.ideas.insert(0, {"time": datetime.now().strftime("%H:%M"), "tag": idea_tag, "text": idea_text})
+            st.session_state.ideas.insert(0, {"time": now_local(), "tag": idea_tag, "text": idea_text})
             st.success("저장됨!")
             st.rerun()
 
