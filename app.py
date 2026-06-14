@@ -267,12 +267,28 @@ with tab1:
     st.progress(done_count / 3, text=f"{done_count} / 3 완료")
 
     # 수분
-    st.markdown("<div class='card-title'>💧 수분 섭취 (목표 8컵)</div>", unsafe_allow_html=True)
-    new_water = st.slider("수분", 0, 8, st.session_state.water, label_visibility="collapsed")
-    if new_water != st.session_state.water:
-        st.session_state.water = new_water
-        changed = True
-    st.caption(f"{st.session_state.water} / 8컵")
+    # 수분
+    st.markdown("<div class='card-title' style='margin-top:16px;'>💧 수분 섭취 (목표 8컵)</div>", unsafe_allow_html=True)
+    
+    # 물방울 버튼 12개 표시
+    MAX_WATER = 12
+    cols = st.columns(MAX_WATER)
+    for i in range(MAX_WATER):
+        with cols[i]:
+            if i < st.session_state.water:
+                # 채워진 물방울 (클릭하면 줄어듦)
+                if st.button("💧", key=f"w_{i}", help=f"{i+1}컵"):
+                    st.session_state.water = i  # 해당 컵 이전으로 줄이기
+                    meal_changed = True
+                    st.rerun()
+            else:
+                # 빈 물방울 (클릭하면 늘어남)
+                if st.button("🩵", key=f"w_{i}", help=f"{i+1}컵"):
+                    st.session_state.water = i + 1  # 해당 컵까지 채우기
+                    meal_changed = True
+                    st.rerun()
+    
+    st.caption(f"{st.session_state.water} / 8컵 {'✅' if st.session_state.water >= 8 else ''}")
 
     # 아침 루틴
     st.info("🌿 기상 후 물 500ml + 소금 한 꼬집 + 레몬즙\n\n☕ 오후 생맥산차 or 오미자차 1잔")
