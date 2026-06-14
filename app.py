@@ -336,14 +336,13 @@ with tab1:
         stroke_color = "#1D9E75" if filled else "#AAAAAA"
         new_val = i if filled else i + 1  # 채워진 거 클릭 → 줄이기 / 빈 거 클릭 → 늘리기
         drops_html += f"""
-        <a href="?water={new_val}" style="text-decoration:none;">
-          <div style="width:30px; height:36px; display:flex; align-items:center; justify-content:center;">
-            <svg width="22" height="28" viewBox="0 0 22 28" xmlns="http://www.w3.org/2000/svg">
-              <path d="M11 1 C11 1 1 12 1 18.5 C1 23.75 5.48 27 11 27 C16.52 27 21 23.75 21 18.5 C21 12 11 1 11 1 Z"
-                    fill="{fill_color}" stroke="{stroke_color}" stroke-width="1.8"/>
-            </svg>
-          </div>
-        </a>"""
+        <div onclick="window.parent.location.search='?water={new_val}'"
+             style="cursor:pointer; width:30px; height:36px; display:flex; align-items:center; justify-content:center;">
+          <svg width="22" height="28" viewBox="0 0 22 28" xmlns="http://www.w3.org/2000/svg">
+            <path d="M11 1 C11 1 1 12 1 18.5 C1 23.75 5.48 27 11 27 C16.52 27 21 23.75 21 18.5 C21 12 11 1 11 1 Z"
+                  fill="{fill_color}" stroke="{stroke_color}" stroke-width="1.8"/>
+          </svg>
+        </div>"""
     drops_html += "</div>"
 
     st.markdown(drops_html, unsafe_allow_html=True)
