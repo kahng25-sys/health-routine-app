@@ -258,7 +258,95 @@ with col2:
 st.markdown("---")
 
 # ── 탭 ──
-tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["🍚 식단","🏃 운동","✅ 할일","💡 메모","📓 일기","🛒 장보기"])
+tab0, tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["🏠 홈","🍚 식단","🏃 운동","✅ 할일","💡 메모","📓 일기","🛒 장보기"])
+
+# ════════════════════════════
+# 탭0: 홈 (오늘 요약 + 빠른 링크)
+# ════════════════════════════
+with tab0:
+    # ── 오늘 요약 카드 ──
+    st.markdown("<div class='card-title'>📋 오늘 요약</div>", unsafe_allow_html=True)
+
+    # 식단 진행률
+    done_count = sum([st.session_state.meal_m_done, st.session_state.meal_l_done, st.session_state.meal_d_done])
+    meal_pct   = int(done_count / 3 * 100)
+    meal_color = "#1D9E75" if done_count == 3 else "#F4A623" if done_count > 0 else "#9E9E9A"
+    st.markdown(f"""
+    <div style='background:white;border-radius:14px;padding:16px 18px;margin-bottom:10px;border:0.5px solid rgba(0,0,0,0.10);'>
+      <div style='font-size:12px;color:#6B6B68;font-weight:600;margin-bottom:10px;'>🍚 오늘 식단</div>
+      <div style='display:flex;align-items:center;gap:12px;'>
+        <div style='font-size:28px;font-weight:700;color:{meal_color};'>{meal_pct}%</div>
+        <div>
+          <div style='font-size:13px;'>{'아침' if st.session_state.meal_m_done else '아침 ○'} {'✓' if st.session_state.meal_m_done else ''}&nbsp;&nbsp;
+          {'점심' if st.session_state.meal_l_done else '점심 ○'} {'✓' if st.session_state.meal_l_done else ''}&nbsp;&nbsp;
+          {'저녁' if st.session_state.meal_d_done else '저녁 ○'} {'✓' if st.session_state.meal_d_done else ''}</div>
+          <div style='font-size:11px;color:#9E9E9A;margin-top:3px;'>{done_count}/3 완료</div>
+        </div>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # 수분 진행률
+    water_pct   = int(st.session_state.water / 2000 * 100)
+    water_color = "#1D9E75" if st.session_state.water >= 2000 else "#378ADD" if st.session_state.water >= 1000 else "#9E9E9A"
+    st.markdown(f"""
+    <div style='background:white;border-radius:14px;padding:16px 18px;margin-bottom:10px;border:0.5px solid rgba(0,0,0,0.10);'>
+      <div style='font-size:12px;color:#6B6B68;font-weight:600;margin-bottom:10px;'>💧 수분 섭취</div>
+      <div style='display:flex;align-items:center;gap:12px;'>
+        <div style='font-size:28px;font-weight:700;color:{water_color};'>{st.session_state.water:,}<span style='font-size:13px;font-weight:400;'>ml</span></div>
+        <div style='font-size:11px;color:#9E9E9A;'>목표 2,000ml<br>{'✅ 달성!' if st.session_state.water >= 2000 else f"{2000 - st.session_state.water:,}ml 남음"}</div>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # 운동 진행률
+    done_ex  = sum(e["done"] for e in st.session_state.exercises)
+    total_ex = len(st.session_state.exercises)
+    ex_pct   = int(done_ex / total_ex * 100) if total_ex else 0
+    ex_color = "#1D9E75" if done_ex == total_ex else "#F4A623" if done_ex > 0 else "#9E9E9A"
+    st.markdown(f"""
+    <div style='background:white;border-radius:14px;padding:16px 18px;margin-bottom:10px;border:0.5px solid rgba(0,0,0,0.10);'>
+      <div style='font-size:12px;color:#6B6B68;font-weight:600;margin-bottom:10px;'>🏃 오늘 운동</div>
+      <div style='display:flex;align-items:center;gap:12px;'>
+        <div style='font-size:28px;font-weight:700;color:{ex_color};'>{done_ex}<span style='font-size:13px;font-weight:400;'>/{total_ex}</span></div>
+        <div style='font-size:11px;color:#9E9E9A;'>운동 완료</div>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # 할일 진행률
+    done_todo  = sum(t["done"] for t in st.session_state.todos)
+    total_todo = len(st.session_state.todos)
+    todo_pct   = int(done_todo / total_todo * 100) if total_todo else 0
+    todo_color = "#1D9E75" if done_todo == total_todo else "#F4A623" if done_todo > 0 else "#9E9E9A"
+    st.markdown(f"""
+    <div style='background:white;border-radius:14px;padding:16px 18px;margin-bottom:16px;border:0.5px solid rgba(0,0,0,0.10);'>
+      <div style='font-size:12px;color:#6B6B68;font-weight:600;margin-bottom:10px;'>✅ 오늘 할일</div>
+      <div style='display:flex;align-items:center;gap:12px;'>
+        <div style='font-size:28px;font-weight:700;color:{todo_color};'>{todo_pct}<span style='font-size:13px;font-weight:400;'>%</span></div>
+        <div style='font-size:11px;color:#9E9E9A;'>{done_todo}/{total_todo} 완료</div>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ── 빠른 링크 ──
+    st.markdown("<div class='card-title'>🔗 빠른 링크</div>", unsafe_allow_html=True)
+
+    LINKS = [
+        ("📊 Google Sheets (건강 데이터)", "https://docs.google.com/spreadsheets/d/1-z86W0vc_7b9T_hEbPgr6uAmG_C9AvFwWJGc-lcQSlo/edit"),
+        ("🤖 Claude AI", "https://claude.ai"),
+        ("📓 Notion", "https://notion.so"),
+        ("💊 Google Keep (빠른 메모)", "https://keep.google.com"),
+    ]
+    for label, url in LINKS:
+        st.markdown(
+            f'<a href="{url}" target="_blank"><button style="width:100%;padding:10px;margin-bottom:8px;background:white;color:#1A1A18;border:0.5px solid rgba(0,0,0,0.15);border-radius:10px;font-size:13px;font-weight:500;cursor:pointer;text-align:left;padding-left:14px;">{label} ↗</button></a>',
+            unsafe_allow_html=True
+        )
+
+    # ── 아침 루틴 체크 ──
+    st.markdown("<div class='card-title' style='margin-top:16px;'>🌿 아침 루틴</div>", unsafe_allow_html=True)
+    st.info("물 500ml + 소금 한 꼬집 + 레몬즙\n\n오후 생맥산차 or 오미자차 1잔")
 
 # ════════════════════════════
 # 탭1: 식단
