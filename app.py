@@ -166,7 +166,7 @@ st.markdown("""
   /* 전체 배경 */
   .stApp { background: #F7F7F5; }
   /* 헤더 여백 줄이기 */
-  .block-container { padding-top: 1rem; padding-bottom: 2rem; max-width: 480px; }
+  .block-container { padding-top: 3rem; padding-bottom: 2rem; max-width: 480px; }
   /* 카드 스타일 */
   .card {
     background: white; border-radius: 14px;
