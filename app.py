@@ -225,7 +225,7 @@ with col2:
 st.markdown("---")
 
 # ── 탭 ──
-tab1, tab2, tab3, tab4, tab5 = st.tabs(["🍚 식단", "🏃 운동", "✅ 할일", "💡 메모", "📓 일기"])
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["🍚 식단", "🏃 운동", "✅ 할일", "💡 메모", "📓 일기", "🛒 장보기"])
 
 # ════════════════════════════
 # 탭1: 식단
@@ -420,3 +420,160 @@ with tab5:
     if st.button("💾 일기 저장", type="primary", use_container_width=True):
         save_diary()
         st.success("✓ 일기가 저장되었습니다!")
+
+
+# ════════════════════════════
+# 탭6: 장보기 리스트
+# ════════════════════════════
+with tab6:
+    st.markdown("<div class='card-title'>🛒 주간 장보기 리스트</div>", unsafe_allow_html=True)
+
+    # 목양체질 기본 고정 식재료
+    BASE_ITEMS = {
+        "🥩 단백질": [
+            {"name": "소고기 (국거리/불고기용)", "qty": "500g", "check": False},
+            {"name": "닭고기 (삼계탕용 영계)", "qty": "1마리", "check": False},
+            {"name": "달걀", "qty": "30개", "check": False},
+            {"name": "추어 (미꾸라지)", "qty": "1팩", "check": False},
+        ],
+        "🥛 유제품": [
+            {"name": "그릭요거트", "qty": "4~6개", "check": False},
+        ],
+        "🥦 채소·뿌리": [
+            {"name": "당근", "qty": "3~4개", "check": False},
+            {"name": "무", "qty": "1개", "check": False},
+            {"name": "우엉", "qty": "1팩", "check": False},
+            {"name": "연근", "qty": "1팩", "check": False},
+            {"name": "도라지", "qty": "1팩", "check": False},
+            {"name": "브로콜리", "qty": "1개", "check": False},
+            {"name": "파프리카", "qty": "2~3개", "check": False},
+            {"name": "방울토마토", "qty": "1팩", "check": False},
+        ],
+        "🍎 과일": [
+            {"name": "사과", "qty": "4~5개", "check": False},
+            {"name": "배", "qty": "2~3개", "check": False},
+            {"name": "블루베리", "qty": "1팩", "check": False},
+            {"name": "수박 (여름)", "qty": "1/4통", "check": False},
+        ],
+        "🌾 곡류": [
+            {"name": "잡곡밥 (혼합곡)", "qty": "2kg", "check": False},
+            {"name": "현미", "qty": "1kg", "check": False},
+        ],
+        "🫙 양념·기타": [
+            {"name": "된장", "qty": "필요시", "check": False},
+            {"name": "깍두기", "qty": "1팩", "check": False},
+            {"name": "호두", "qty": "1팩", "check": False},
+            {"name": "아몬드", "qty": "1팩", "check": False},
+            {"name": "레몬", "qty": "3~4개", "check": False},
+        ],
+        "🍵 차·음료": [
+            {"name": "오미자차", "qty": "1박스", "check": False},
+            {"name": "생맥산차", "qty": "1박스", "check": False},
+        ],
+    }
+
+    # 세션 초기화
+    if "shopping_items" not in st.session_state:
+        st.session_state.shopping_items = BASE_ITEMS.copy()
+    if "custom_items" not in st.session_state:
+        st.session_state.custom_items = []
+
+    # 초기화 버튼
+    col_r1, col_r2 = st.columns([3,1])
+    with col_r1:
+        st.caption("✅ 체크한 항목 = 이미 있음 / 구매 완료")
+    with col_r2:
+        if st.button("🔄 초기화", use_container_width=True):
+            for cat in st.session_state.shopping_items:
+                for item in st.session_state.shopping_items[cat]:
+                    item["check"] = False
+            st.session_state.custom_items = []
+            st.rerun()
+
+    st.divider()
+
+    # 카테고리별 체크리스트
+    checked_total = 0
+    total_items = 0
+
+    for category, items in st.session_state.shopping_items.items():
+        st.markdown(f"**{category}**")
+        for i, item in enumerate(items):
+            total_items += 1
+            col_c, col_n, col_q = st.columns([1, 5, 2])
+            with col_c:
+                checked = st.checkbox(
+                    "체크",
+                    value=item["check"],
+                    key=f"shop_{category}_{i}",
+                    label_visibility="collapsed"
+                )
+                if checked != item["check"]:
+                    st.session_state.shopping_items[category][i]["check"] = checked
+            with col_n:
+                style = "text-decoration:line-through;color:#9E9E9A;" if item["check"] else ""
+                st.markdown(f"<span style='{style}'>{item['name']}</span>", unsafe_allow_html=True)
+            with col_q:
+                st.caption(item["qty"])
+            if checked:
+                checked_total += 1
+        st.divider()
+
+    # 커스텀 추가 항목
+    if st.session_state.custom_items:
+        st.markdown("**➕ 추가 항목**")
+        for i, item in enumerate(st.session_state.custom_items):
+            col_c, col_n, col_d = st.columns([1, 5, 1])
+            with col_c:
+                checked = st.checkbox(
+                    "체크",
+                    value=item["check"],
+                    key=f"custom_{i}",
+                    label_visibility="collapsed"
+                )
+                st.session_state.custom_items[i]["check"] = checked
+                if checked:
+                    checked_total += 1
+            with col_n:
+                style = "text-decoration:line-through;color:#9E9E9A;" if item["check"] else ""
+                qty_str = item['qty']
+                name_str = item['name']
+                st.markdown(f"<span style='{style}'>{name_str} <span style='color:#9E9E9A;font-size:12px;'>{qty_str}</span></span>", unsafe_allow_html=True)
+            with col_d:
+                if st.button("🗑️", key=f"del_{i}", use_container_width=True):
+                    st.session_state.custom_items.pop(i)
+                    st.rerun()
+        total_items += len(st.session_state.custom_items)
+        st.divider()
+
+    # 진행률
+    st.progress(checked_total / total_items if total_items else 0,
+                text=f"구매 완료 {checked_total} / {total_items}개")
+
+    # 항목 추가
+    st.markdown("**항목 추가**")
+    col_a, col_b, col_c = st.columns([4, 2, 1])
+    with col_a:
+        new_item_name = st.text_input("품목", placeholder="품목명 입력...", label_visibility="collapsed")
+    with col_b:
+        new_item_qty = st.text_input("수량", placeholder="수량 (예: 2개)", label_visibility="collapsed")
+    with col_c:
+        if st.button("➕", key="add_shop", use_container_width=True) and new_item_name.strip():
+            st.session_state.custom_items.append({
+                "name": new_item_name.strip(),
+                "qty": new_item_qty.strip() or "-",
+                "check": False
+            })
+            st.rerun()
+
+    # Sheets 버튼
+    SHEETS_URL = "https://docs.google.com/spreadsheets/d/1-z86W0vc_7b9T_hEbPgr6uAmG_C9AvFwWJGc-lcQSlo/edit"
+    st.markdown(
+        f'''<a href="{SHEETS_URL}" target="_blank">
+            <button style="width:100%;padding:10px;margin-top:12px;
+                background:#1D9E75;color:white;border:none;
+                border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">
+                📊 Google Sheets 열기
+            </button></a>''',
+        unsafe_allow_html=True
+    )
